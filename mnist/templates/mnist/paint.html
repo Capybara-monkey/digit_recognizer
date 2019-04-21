@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}手書き数字認識{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" href="">手書き数字認識</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</nav>
+
+<div class="container" style="padding:60px 0 0 0">
+    <div class="jumbotron bg-white">
+        <h1>手書き数字認識</h1>
+        <h3>CNNによる手書き数字認識</h3>
+    </div>
+    <div>
+    <center><h1>{{ predict }}</h1></center>
+        <Br>
+    </div>
+    <form action="" method="POST" enctype='multipart/form-data'>
+        <div class="container">
+            <center><canvas id="canvas" width="280" height="280"></canvas></center>
+        </div>
+    <hr>
+    <input type="hidden" name="img-src" value="" id="img-src">
+    <center><input type="button" class="btn btn-outline-primary btn-lg" id="send" value="認識"></center>
+{% csrf_token %}
+</form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// キャンバスを操作するためのオブジェクトを取得
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+var sW = window.innerWidth;
+var sH = window.innerHeight;
+
+// キャンバスを黒く塗りつぶす
+ctx.fillStyle = '#000';
+ctx.fillRect(0, 0, 280, 280);
+
+ctx.lineCap = 'square';  // 四角い形の線
+ctx.strokeStyle = '#fff';  // 白い線
+ctx.lineWidth = 13;  // 線の幅
+var draw = false;  // クリック中かのフラグ
+
+// マウスが動いたときに呼び出される
+canvas.addEventListener("mousemove",function(e) {
+  var rect = e.target.getBoundingClientRect();
+  mouseX = e.clientX - rect.top - 230;
+  mouseY = e.clientY - rect.top ;
+
+  if(draw) {
+    ctx.beginPath();
+    ctx.moveTo(mouseX1,mouseY1);
+    ctx.lineTo(mouseX,mouseY);
+    ctx.stroke();
+    mouseX1 = mouseX;
+    mouseY1 = mouseY;
+  }
+});
+
+// クリックで呼び出される
+canvas.addEventListener("mousedown",function(e) {
+  draw = true;
+  mouseX1 = mouseX;
+  mouseY1 = mouseY;
+});
+
+// クリックを離されると呼び出される
+canvas.addEventListener("mouseup", function(e){
+  draw = false;
+});
+
+
+// 送信ボタンで呼び出される
+$('#send').on('click',function(e){
+    var form = $(this).parents('form');
+    var src = canvas.toDataURL('image/png');
+    $('#img-src').val(src);
+    form.submit();
+});
+</script>
+{% endblock %}
